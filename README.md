@@ -6,13 +6,12 @@
 ## Table of Contents
 
 1. [Project Overview](#project-overview)
-2. [Design Details](#design-details)
-3. [Requirements](#requirements)
-4. [Environment Variables](#environment-variables)
-5. [Build the Application](#build-the-application)
-6. [Run the Application](#run-the-application)
-7. [Accessing Logs](#accessing-logs)
-8. [API Documentation](#api-documentation)
+2. [Requirements](#requirements)
+3. [Environment Variables](#environment-variables)
+4. [Build the Application](#build-the-application)
+5. [Run the Application](#run-the-application)
+6. [Accessing Logs](#accessing-logs)
+7. [API Documentation](#api-documentation)
 
 
 ## Project Overview
