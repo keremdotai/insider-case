@@ -15,6 +15,7 @@ RUN go mod download
 
 # Copy the source code
 COPY ./*.go ./
+COPY ./docs ./docs
 COPY ./database/*.go ./database/
 COPY ./handlers/*.go ./handlers/
 COPY ./models/*.go ./models/

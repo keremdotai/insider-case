@@ -12,7 +12,14 @@ import (
 var isActive bool = true // Default true, message sending starts when the server starts
 var mu sync.Mutex
 
-// Handler for `/startAndStop` endpoint
+// @Summary Start or stop the message sending.
+// @Description It enables you to start or stop the message sending according to "action" parameter.
+// @Accept  json
+// @Produce  json
+// @Param  request body models.StartAndStopRequest true "Action to start or stop"
+// @Success 200 {object} map[string]string "Message describing the status of the message sending service"
+// @Failure 400 {object} map[string]string "Error message explaining the invalid request payload or action"
+// @Router /start-stop [post]
 func StartAndStopMessageSending(c echo.Context) error {
 	// Lock the mutex
 	mu.Lock()

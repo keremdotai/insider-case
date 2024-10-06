@@ -11,7 +11,9 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
+	echoSwagger "github.com/swaggo/echo-swagger"
 	"kerem.ai/insider/database"
+	"kerem.ai/insider/docs"
 	"kerem.ai/insider/handlers"
 	"kerem.ai/insider/workers"
 )
@@ -38,12 +40,19 @@ func main() {
 	// Start the message sender workers
 	go workers.StartMessageSenderWorkers()
 
+	// Set the Swagger Info
+	docs.SwaggerInfo.Host = fmt.Sprintf("localhost:%s", port)
+	docs.SwaggerInfo.Version = "1.0"
+
 	// Define server and its routes
 	e := echo.New()
 	e.Logger.SetLevel(log.INFO)
 
 	e.GET("/sent-messages", handlers.ListSentMessages)
 	e.POST("/start-stop", handlers.StartAndStopMessageSending)
+
+	// Serve Swagger UI
+	e.GET("/swagger/*", echoSwagger.WrapHandler)
 
 	// Start the server
 	go func() {

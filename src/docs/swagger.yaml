@@ -1,0 +1,79 @@
+definitions:
+  models.Message:
+    properties:
+      content:
+        description: Size limit for message content
+        type: string
+      to:
+        description: Phone number must be in the form of +905xxxxxxxxx
+        type: string
+    type: object
+  models.StartAndStopRequest:
+    properties:
+      action:
+        description: Action to be taken, either "start" or "stop"
+        enum:
+        - start
+        - stop
+        type: string
+    required:
+    - action
+    type: object
+  SuccessResponse:
+    type: object
+    properties:
+      message:
+        type: string
+        description: "Message describing the status of the message sending service"
+  ErrorResponse:
+    type: object
+    properties:
+      error:
+        type: string
+        description: "Error message explaining what went wrong"
+info:
+  contact: {}
+paths:
+  /sent-messages:
+    get:
+      description: Retrieves a list of all messages that have been sent.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: "List of all sent messages are returned"
+          schema:
+            items:
+              $ref: '#/definitions/models.Message'
+            type: array
+        "500":
+          description: "Error message explaining the server error"
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: List all sent messages.
+  /start-stop:
+    post:
+      consumes:
+      - application/json
+      description: It enables you to start or stop the message sending according to
+        "action" parameter.
+      parameters:
+      - description: Action to start or stop
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.StartAndStopRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: "Message describing the status of the message sending service"
+          schema:
+            $ref: '#/definitions/SuccessResponse'
+        "400":
+          description: "Error message explaining the invalid request payload or action"
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Start or stop the message sending.
+swagger: "2.0"
