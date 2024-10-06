@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/labstack/gommon/log"
 	"kerem.ai/insider/database"
 	"kerem.ai/insider/models"
 )
@@ -26,6 +27,8 @@ func StartMessageSenderWorkers() {
 	go messageSenderWorker()
 
 	wg.Wait() // Wait for the workers to finish
+
+	log.Info("All message sender workers are stopped")
 }
 
 // Message sender worker
@@ -39,22 +42,36 @@ func messageSenderWorker() {
 
 	for {
 		select {
-		// Waiting 2 minutes for the next message
+		// Waiting 2 seconds for the next message
 		case <-ticker.C:
-			message, ok := <-messageQueue
+			log.Info("Waiting for the next message") //
 
-			// Check if the message queue is closed
-			if !ok {
-				return
-			}
+			select {
+			// Get the message from the queue
+			case message, ok := <-messageQueue:
+				// Check if the message queue is closed
+				if !ok {
+					log.Info("message queue is closed")
+					return
+				}
 
-			// Send the message to the webhook
-			err := sendRequestToWebhook(client, &message)
-			if err != nil {
-				messageQueue <- message
+				log.Info("Message received to send")
+				err := sendRequestToWebhook(client, &message)
+				if err != nil {
+					log.Errorf("failed to send message: %v", err)
+
+					// Update the message in_queue status to false
+					if err := database.UpdateMessageInQueueStatus(message.ID, false); err != nil {
+						log.Errorf("failed to update message in_queue status: %v", err)
+					}
+				}
+
+			default:
+				log.Info("message queue is empty")
 			}
 		// Receiving stop signal
 		case <-stopSignal:
+			log.Info("Stopping message sender worker")
 			return
 		}
 	}
@@ -93,6 +110,8 @@ func sendRequestToWebhook(client *http.Client, message *models.Message) error {
 	req.Header.Set("x-ins-auth-key", "INS.me1x9uMcyYGlhKKQVPoc.bO3j9aZwRTOcA2Ywo")
 
 	// Send the request
+	dt := time.Now() // Timestamp for the request
+
 	resp, err := client.Do(req)
 	if err != nil {
 		return err
@@ -106,16 +125,22 @@ func sendRequestToWebhook(client *http.Client, message *models.Message) error {
 	}
 
 	// Update the message status
-	err = database.UpdateMessageSentStatus(message.ID)
+	err = database.UpdateMessageSentStatus(message.ID, true)
 	if err != nil {
 		return err
 	}
 
+	// Parse response body
 	var responseData map[string]string // Response data
 	json.NewDecoder(resp.Body).Decode(&responseData)
+	responseData["timestamp"] = dt.Format("2006-01-02 15:04:05")
 
-	messageID := responseData["messageId"]
-	err = database.AppendMessageID("sent_messages", messageID)
+	jsonItem, err := json.Marshal(responseData)
+	if err != nil {
+		return err
+	}
+
+	err = database.AppendSentMessage("sent_messages", string(jsonItem))
 	if err != nil {
 		return err
 	}
