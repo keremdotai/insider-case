@@ -18,14 +18,13 @@ import (
 
 func main() {
 	// Get host and port from the environment variables
-	host := os.Getenv("HOST")
 	port := os.Getenv("PORT")
 
-	if host == "" || port == "" {
-		panic("host and port cannot be empty")
+	if port == "" {
+		panic("port cannot be empty")
 	}
 
-	serverAddress := fmt.Sprintf("%s:%s", host, port)
+	serverAddress := fmt.Sprintf("0.0.0.0:%s", port)
 
 	// Initialize the connection to the databases
 	// If any of the connections fail, the program will panic
@@ -33,7 +32,7 @@ func main() {
 	database.ConnectRedisDB()
 
 	// Start message generation and queuing
-	go workers.MessageToQueue()
+	go workers.GenerateMessages()
 	go workers.MessageToQueue()
 
 	// Start the message sender workers
