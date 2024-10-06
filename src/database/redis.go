@@ -16,15 +16,12 @@ var RedisDB *redis.Client
 func ConnectRedisDB() {
 	// Get environment variables for Redis connection
 	host := os.Getenv("REDIS_HOST")
-	port := os.Getenv("REDIS_PORT")
-	username := os.Getenv("REDIS_USERNAME")
 	password := os.Getenv("REDIS_PASSWORD")
 
 	RedisDB = redis.NewClient(&redis.Options{
-		Addr:     fmt.Sprintf("%s:%s", host, port), // Redis connection address
-		Username: username,                         // Username for Redis connection
-		Password: password,                         // Password for Redis connection
-		DB:       0,                                // Default DB
+		Addr:     fmt.Sprintf("%s:6379", host), // Redis connection address
+		Password: password,                     // Password for Redis connection
+		DB:       0,                            // Default DB
 	})
 
 	// Check the connection status
@@ -35,8 +32,8 @@ func ConnectRedisDB() {
 }
 
 // Append message ID to the Redis list
-func AppendMessageID(listKey string, messageID string) error {
-	err := RedisDB.RPush(ctx, listKey, messageID).Err()
+func AppendSentMessage(listKey string, jsonItemString string) error {
+	err := RedisDB.RPush(ctx, listKey, jsonItemString).Err()
 	if err != nil {
 		return fmt.Errorf("failed to append message id to the Redis list: %v", err)
 	}
