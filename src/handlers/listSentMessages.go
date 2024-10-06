@@ -8,7 +8,8 @@ import (
 )
 
 func ListSentMessages(c echo.Context) error {
-	sentMessageIDs, err := database.RetrieveListItems("sent_messages")
+	// Find all messages that are sent
+	messages, err := database.FindMessages(true, true, false)
 	if err != nil {
 		return c.JSON(
 			http.StatusInternalServerError,
@@ -18,6 +19,6 @@ func ListSentMessages(c echo.Context) error {
 
 	return c.JSON(
 		http.StatusOK,
-		map[string]interface{}{"sent_messages": sentMessageIDs},
+		messages,
 	)
 }
