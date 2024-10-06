@@ -2,38 +2,28 @@ package workers
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"time"
 
 	"github.com/icrowley/fake"
+	"github.com/labstack/gommon/log"
 	"kerem.ai/insider/database"
 )
 
 func GenerateMessages() {
 	// Set the sleep time for message generation
-	valueStr := os.Getenv("SLEEP_TIME_FOR_MESSAGE_GENERATION")
-	valueFloat, err := strconv.ParseFloat(valueStr, 64)
-	if err != nil {
-		panic(fmt.Sprintf("cannot parse the sleep time for message generation: %v", valueFloat))
-	}
-
-	if valueFloat < 0.2 || valueFloat > 1 {
-		panic("sleep time for message generation should be between 0.2 and 1")
-	}
-
-	sleepTime := int(valueFloat * 1000)
+	sleepTime := 200 // 0.2 seconds
 
 	// Generate messages
 	for {
 		// Generate a message
 		err := generateMessage()
 		if err != nil {
+			log.Errorf("cannot generate the message: %v", err)
 			continue
 		}
 
 		// Sleep
-		time.Sleep(time.Duration(sleepTime) * time.Millisecond)
+		time.Sleep(time.Millisecond * time.Duration(sleepTime))
 	}
 }
 
